@@ -1,0 +1,9 @@
+C:\Users\Enko\Desktop\Programming\SharpDevelop WorkSpace\TrilaterationDemo\TrilaterationDemo\bin\Debug\TrilaterationDemo.exe.config
+C:\Users\Enko\Desktop\Programming\SharpDevelop WorkSpace\TrilaterationDemo\TrilaterationDemo\bin\Debug\TrilaterationDemo.exe
+C:\Users\Enko\Desktop\Programming\SharpDevelop WorkSpace\TrilaterationDemo\TrilaterationDemo\bin\Debug\TrilaterationDemo.pdb
+C:\Users\Enko\Desktop\Programming\SharpDevelop WorkSpace\TrilaterationDemo\TrilaterationDemo\obj\Debug\TrilaterationDemo.csprojResolveAssemblyReference.cache
+C:\Users\Enko\Desktop\Programming\SharpDevelop WorkSpace\TrilaterationDemo\TrilaterationDemo\obj\Debug\TrilaterationDemo.MainForm.resources
+C:\Users\Enko\Desktop\Programming\SharpDevelop WorkSpace\TrilaterationDemo\TrilaterationDemo\obj\Debug\TrilaterationDemo.Properties.Resources.resources
+C:\Users\Enko\Desktop\Programming\SharpDevelop WorkSpace\TrilaterationDemo\TrilaterationDemo\obj\Debug\TrilaterationDemo.csproj.GenerateResource.Cache
+C:\Users\Enko\Desktop\Programming\SharpDevelop WorkSpace\TrilaterationDemo\TrilaterationDemo\obj\Debug\TrilaterationDemo.exe
+C:\Users\Enko\Desktop\Programming\SharpDevelop WorkSpace\TrilaterationDemo\TrilaterationDemo\obj\Debug\TrilaterationDemo.pdb
