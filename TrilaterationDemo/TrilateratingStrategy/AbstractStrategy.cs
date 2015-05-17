@@ -1,4 +1,6 @@
-﻿namespace TrilaterationDemo.TrilateratingStrategy
+﻿using System.Drawing;
+
+namespace TrilaterationDemo.TrilateratingStrategy
 {
     public abstract class AbstractStrategy
     {
@@ -9,6 +11,6 @@
             Floor = floor;
         }
 
-        public abstract void CalculateUserPosition();
+        public abstract PointF CalculateUserPosition();
     }
 }

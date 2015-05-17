@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
-using TrilaterationDemo.TrilateratingStrategy;
+using TrilaterationDemo.Properties;
 
 namespace TrilaterationDemo
 {
@@ -21,7 +22,7 @@ namespace TrilaterationDemo
             picBoxTrilateration.Image = _bitmap;
 
             _drawer = new Drawer(_bitmap);
-            Floor.GetFloor().ChangeTrilaterationMethod(new TrilaterationStrategy(Floor.GetFloor()));
+            Floor.GetFloor().ChangeTrilaterationMethod(0);
             
             picBoxTrilateration.MouseDown += (o, args) => { _drawer.OnMouseDown(args.X, args.Y); picBoxTrilateration.Invalidate(); };
             picBoxTrilateration.MouseMove += (o, args) => { _drawer.OnMouseMove(args.X, args.Y); picBoxTrilateration.Invalidate(); };
@@ -34,26 +35,25 @@ namespace TrilaterationDemo
         private void btnReset_Click(object sender, EventArgs e)
         {
             _drawer.Reset();
-            picBoxTrilateration.Invalidate();
-        }
-
-        private void rBtnRayTracing_CheckedChanged(object sender, EventArgs e)
-        {
-            Floor.GetFloor().ChangeTrilaterationMethod(new RayTracingStrategy(Floor.GetFloor()));
             _drawer.SetNeedsDisplay();
             picBoxTrilateration.Invalidate();
         }
 
-        private void rBtnTrilateration_CheckedChanged(object sender, EventArgs e)
+        private void rBtnMethod_CheckedChanged(object sender, EventArgs e)
         {
-            Floor.GetFloor().ChangeTrilaterationMethod(new TrilaterationStrategy(Floor.GetFloor()));
-            _drawer.SetNeedsDisplay();
-            picBoxTrilateration.Invalidate();
+            foreach (var radio in panelTrilaterationMethods.Controls.OfType<RadioButton>()
+                .Select(control => control)
+                .Where(radio => radio.Checked && radio.Text != Resources.Both))
+            {
+                Floor.GetFloor().ChangeTrilaterationMethod(radio.TabIndex);
+                _drawer.SetNeedsDisplay();
+                picBoxTrilateration.Invalidate();
+            }
         }
 
-        private void rBtnPowerCenter_CheckedChanged(object sender, EventArgs e)
+        private void rBtnBoth_CheckedChanged(object sender, EventArgs e)
         {
-            Floor.GetFloor().ChangeTrilaterationMethod(new PowerCenterStrategy(Floor.GetFloor())); 
+            Floor.GetFloor().UseBothMethods();
             _drawer.SetNeedsDisplay();
             picBoxTrilateration.Invalidate();
         }

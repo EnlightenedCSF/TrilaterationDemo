@@ -9,7 +9,7 @@ namespace TrilaterationDemo.TrilateratingStrategy
         {
         }
 
-        public override void CalculateUserPosition()
+        public override PointF CalculateUserPosition()
         {
             var wasIntersectionOfAllThree = false;
             var floor = Floor.GetFloor();
@@ -75,7 +75,7 @@ namespace TrilaterationDemo.TrilateratingStrategy
                     }
                 }
             }
-            Floor.UserPosition = wasIntersectionOfAllThree ? 
+            return wasIntersectionOfAllThree ? 
                 new PointF((xMinUser + xMaxUser) / 2.0f, (yMinUser + yMaxUser) / 2.0f) : 
                 new PointF(-100, -100);
         }

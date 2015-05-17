@@ -10,7 +10,7 @@ namespace TrilaterationDemo.TrilateratingStrategy
         {
         }
 
-        public override void CalculateUserPosition()
+        public override PointF CalculateUserPosition()
         {
             var floor = Floor.GetFloor();
             var p1 = floor.Beacons[0];
@@ -40,7 +40,7 @@ namespace TrilaterationDemo.TrilateratingStrategy
             var yval = (distA*distA - distC*distC + ival*ival + jval*jval)/(2*jval) - (ival/jval)*xval;
             const int zval = 0;
 
-            Floor.UserPosition = new PointF((float)(p1.X + ex.X * xval + ey.X * yval + ez.X * zval),
+            return new PointF((float)(p1.X + ex.X * xval + ey.X * yval + ez.X * zval),
                 (float)(p1.Y + ex.Y * xval + ey.Y * yval + ez.Y * zval));
         }
     }

@@ -24,11 +24,20 @@ namespace TrilaterationDemo
         private const float SelectedAccuracyRadiusLineWidth = 4;
         private const float UserPointSize = 8;
         private const float UserExtraPointSize = 12;
+        private const float LabelShift = 10;
+        private readonly Font _font;
+        private readonly StringFormat _centerStringFormat;
 
         public Drawer(Image bitmap)
         {
             _graphics = Graphics.FromImage(bitmap);
             _beacons = Floor.GetFloor().Beacons;
+            _font = new Font("Arial", 10f);
+            _centerStringFormat = new StringFormat
+            {
+                LineAlignment = StringAlignment.Center,
+                Alignment = StringAlignment.Center
+            };
             NeedToRecalculate += (sender, args) => Floor.GetFloor().CalculateUserPosition();
 
             Reset();
@@ -54,6 +63,7 @@ namespace TrilaterationDemo
         public void SetNeedsDisplay()
         {
             NeedToRecalculate.Invoke(this, null);
+            Draw();
         }
 
         public void OnMouseDown(double x, double y)
@@ -129,6 +139,7 @@ namespace TrilaterationDemo
 
             foreach (var beacon in _beacons)
             {
+                #region Drawing beacons
                 if (_isBeaconSelected && _selectedBeacon == beacon)
                 {
                     _graphics.FillEllipse(new SolidBrush(Color.Blue),
@@ -149,8 +160,9 @@ namespace TrilaterationDemo
                            Size = new SizeF(BeaconSize, BeaconSize)
                        });
                 }
+                #endregion
 
-
+                #region Drawing beacon radiuses
                 if (_isBeaconRadiusSelected && _selectedBeacon == beacon)
                 {
                     _graphics.DrawEllipse(new Pen(Color.Salmon, SelectedAccuracyRadiusLineWidth),
@@ -171,22 +183,97 @@ namespace TrilaterationDemo
                         Size = new SizeF((2 * beacon.Accuracy) * MetersToPixels, (2 * beacon.Accuracy) * MetersToPixels),
                     });
                 }
+                #endregion
             }
 
-            _graphics.DrawEllipse(new Pen(Color.Teal, 2), 
-                new RectangleF
-                {
-                    Location = new PointF(MetersToPixels * Floor.GetFloor().UserPosition.X + ShiftX - UserExtraPointSize / 2,
-                                          MetersToPixels * Floor.GetFloor().UserPosition.Y + ShiftY - UserExtraPointSize / 2),
-                    Size = new SizeF(UserExtraPointSize, UserExtraPointSize)
-                });
-            _graphics.FillEllipse(new SolidBrush(Color.LimeGreen),
-                new RectangleF
-                {
-                    Location = new PointF(MetersToPixels * Floor.GetFloor().UserPosition.X + ShiftX - UserPointSize/2, 
-                                          MetersToPixels * Floor.GetFloor().UserPosition.Y + ShiftY - UserPointSize/2),
-                    Size = new SizeF(UserPointSize, UserPointSize)
-                });
+            if (!Floor.GetFloor().IsUsingBothStrategies)
+            {
+                #region Draw single user position
+                _graphics.DrawEllipse(new Pen(Color.Teal, 2),
+                    new RectangleF
+                    {
+                        Location =
+                            new PointF(MetersToPixels*Floor.GetFloor().UserPositions[0].X + ShiftX - UserExtraPointSize/2,
+                                MetersToPixels * Floor.GetFloor().UserPositions[0].Y + ShiftY - UserExtraPointSize / 2),
+                        Size = new SizeF(UserExtraPointSize, UserExtraPointSize)
+                    });
+                _graphics.FillEllipse(new SolidBrush(Color.LimeGreen),
+                    new RectangleF
+                    {
+                        Location = new PointF(MetersToPixels * Floor.GetFloor().UserPositions[0].X + ShiftX - UserPointSize / 2,
+                            MetersToPixels * Floor.GetFloor().UserPositions[0].Y + ShiftY - UserPointSize / 2),
+                        Size = new SizeF(UserPointSize, UserPointSize)
+                    });
+                #endregion
+            }
+            else
+            {
+                #region Trilateration
+                _graphics.DrawEllipse(new Pen(Color.Teal, 2),
+                    new RectangleF
+                    {
+                        Location =
+                            new PointF(MetersToPixels * Floor.GetFloor().UserPositions[0].X + ShiftX - UserExtraPointSize / 2,
+                                MetersToPixels * Floor.GetFloor().UserPositions[0].Y + ShiftY - UserExtraPointSize / 2),
+                        Size = new SizeF(UserExtraPointSize, UserExtraPointSize)
+                    });
+                _graphics.FillEllipse(new SolidBrush(Color.LimeGreen),
+                    new RectangleF
+                    {
+                        Location = new PointF(MetersToPixels * Floor.GetFloor().UserPositions[0].X + ShiftX - UserPointSize / 2,
+                            MetersToPixels * Floor.GetFloor().UserPositions[0].Y + ShiftY - UserPointSize / 2),
+                        Size = new SizeF(UserPointSize, UserPointSize)
+                    });
+                _graphics.DrawString("CI", _font, new SolidBrush(Color.LimeGreen), 
+                    MetersToPixels * Floor.GetFloor().UserPositions[0].X + ShiftX + LabelShift,
+                    MetersToPixels * Floor.GetFloor().UserPositions[0].Y + ShiftY - LabelShift, 
+                    _centerStringFormat);
+                #endregion
+
+                #region Ray tracing
+                _graphics.DrawEllipse(new Pen(Color.DarkBlue, 2),
+                    new RectangleF
+                    {
+                        Location =
+                            new PointF(MetersToPixels * Floor.GetFloor().UserPositions[1].X + ShiftX - UserExtraPointSize / 2,
+                                MetersToPixels * Floor.GetFloor().UserPositions[1].Y + ShiftY - UserExtraPointSize / 2),
+                        Size = new SizeF(UserExtraPointSize, UserExtraPointSize)
+                    });
+                _graphics.FillEllipse(new SolidBrush(Color.DeepSkyBlue),
+                    new RectangleF
+                    {
+                        Location = new PointF(MetersToPixels * Floor.GetFloor().UserPositions[1].X + ShiftX - UserPointSize / 2,
+                            MetersToPixels * Floor.GetFloor().UserPositions[1].Y + ShiftY - UserPointSize / 2),
+                        Size = new SizeF(UserPointSize, UserPointSize)
+                    });
+                _graphics.DrawString("RT", _font, new SolidBrush(Color.DarkBlue),
+                    MetersToPixels * Floor.GetFloor().UserPositions[1].X + ShiftX + LabelShift,
+                    MetersToPixels * Floor.GetFloor().UserPositions[1].Y + ShiftY - LabelShift, 
+                    _centerStringFormat);
+                #endregion
+
+                #region Power center
+                _graphics.DrawEllipse(new Pen(Color.DarkOrange, 2),
+                    new RectangleF
+                    {
+                        Location =
+                            new PointF(MetersToPixels * Floor.GetFloor().UserPositions[2].X + ShiftX - UserExtraPointSize / 2,
+                                MetersToPixels * Floor.GetFloor().UserPositions[2].Y + ShiftY - UserExtraPointSize / 2),
+                        Size = new SizeF(UserExtraPointSize, UserExtraPointSize)
+                    });
+                _graphics.FillEllipse(new SolidBrush(Color.Orange),
+                    new RectangleF
+                    {
+                        Location = new PointF(MetersToPixels * Floor.GetFloor().UserPositions[2].X + ShiftX - UserPointSize / 2,
+                            MetersToPixels * Floor.GetFloor().UserPositions[2].Y + ShiftY - UserPointSize / 2),
+                        Size = new SizeF(UserPointSize, UserPointSize)
+                    });
+                _graphics.DrawString("PC", _font, new SolidBrush(Color.DarkOrange),
+                    MetersToPixels * Floor.GetFloor().UserPositions[2].X + ShiftX + LabelShift,
+                    MetersToPixels * Floor.GetFloor().UserPositions[2].Y + ShiftY - LabelShift, 
+                    _centerStringFormat);
+                #endregion
+            }
         }
         #endregion
 
