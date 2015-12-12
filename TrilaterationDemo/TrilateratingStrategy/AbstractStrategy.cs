@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using TrilaterationDemo.Model;
 
 namespace TrilaterationDemo.TrilateratingStrategy
 {

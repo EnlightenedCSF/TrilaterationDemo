@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using TrilaterationDemo.Model;
 
 namespace TrilaterationDemo.TrilateratingStrategy
 {
@@ -33,7 +34,6 @@ namespace TrilaterationDemo.TrilateratingStrategy
 
             var x = (k1 - k2)*(p2.Y - p3.Y) - (p1.Y - p2.Y)*(k2 - k3);
             var y = (p1.X - p2.X)*(k2 - k3) - (k1 - k2)*(p2.X - p3.X);
-            //Floor.UserPosition = new PointF(x/d, y/d);
             return new PointF(x/d, y/d);
         }
     }

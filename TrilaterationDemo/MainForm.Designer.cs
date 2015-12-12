@@ -33,6 +33,7 @@ namespace TrilaterationDemo
             this.picBoxTrilateration = new System.Windows.Forms.PictureBox();
             this.btnReset = new System.Windows.Forms.Button();
             this.panelTrilaterationMethods = new System.Windows.Forms.Panel();
+            this.rBtnEPTA = new System.Windows.Forms.RadioButton();
             this.rBtnBoth = new System.Windows.Forms.RadioButton();
             this.rBtnPowerCenter = new System.Windows.Forms.RadioButton();
             this.rBtnRayTracing = new System.Windows.Forms.RadioButton();
@@ -43,6 +44,7 @@ namespace TrilaterationDemo
             // 
             // picBoxTrilateration
             // 
+            this.picBoxTrilateration.Cursor = System.Windows.Forms.Cursors.Cross;
             this.picBoxTrilateration.Location = new System.Drawing.Point(12, 48);
             this.picBoxTrilateration.Name = "picBoxTrilateration";
             this.picBoxTrilateration.Size = new System.Drawing.Size(665, 450);
@@ -51,7 +53,7 @@ namespace TrilaterationDemo
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(442, 9);
+            this.btnReset.Location = new System.Drawing.Point(552, 9);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(75, 23);
             this.btnReset.TabIndex = 1;
@@ -61,22 +63,35 @@ namespace TrilaterationDemo
             // 
             // panelTrilaterationMethods
             // 
+            this.panelTrilaterationMethods.Controls.Add(this.rBtnEPTA);
             this.panelTrilaterationMethods.Controls.Add(this.rBtnBoth);
             this.panelTrilaterationMethods.Controls.Add(this.rBtnPowerCenter);
             this.panelTrilaterationMethods.Controls.Add(this.rBtnRayTracing);
             this.panelTrilaterationMethods.Controls.Add(this.rBtnTrilateration);
             this.panelTrilaterationMethods.Location = new System.Drawing.Point(13, 1);
             this.panelTrilaterationMethods.Name = "panelTrilaterationMethods";
-            this.panelTrilaterationMethods.Size = new System.Drawing.Size(423, 41);
+            this.panelTrilaterationMethods.Size = new System.Drawing.Size(533, 41);
             this.panelTrilaterationMethods.TabIndex = 2;
+            // 
+            // rBtnEPTA
+            // 
+            this.rBtnEPTA.AutoSize = true;
+            this.rBtnEPTA.Location = new System.Drawing.Point(358, 11);
+            this.rBtnEPTA.Name = "rBtnEPTA";
+            this.rBtnEPTA.Size = new System.Drawing.Size(53, 17);
+            this.rBtnEPTA.TabIndex = 3;
+            this.rBtnEPTA.TabStop = true;
+            this.rBtnEPTA.Text = "EPTA";
+            this.rBtnEPTA.UseVisualStyleBackColor = true;
+            this.rBtnEPTA.CheckedChanged += new System.EventHandler(this.rBtnMethod_CheckedChanged);
             // 
             // rBtnBoth
             // 
             this.rBtnBoth.AutoSize = true;
-            this.rBtnBoth.Location = new System.Drawing.Point(347, 11);
+            this.rBtnBoth.Location = new System.Drawing.Point(457, 11);
             this.rBtnBoth.Name = "rBtnBoth";
             this.rBtnBoth.Size = new System.Drawing.Size(47, 17);
-            this.rBtnBoth.TabIndex = 3;
+            this.rBtnBoth.TabIndex = 4;
             this.rBtnBoth.TabStop = true;
             this.rBtnBoth.Text = "Both";
             this.rBtnBoth.UseVisualStyleBackColor = true;
@@ -144,6 +159,7 @@ namespace TrilaterationDemo
         private System.Windows.Forms.RadioButton rBtnRayTracing;
         private System.Windows.Forms.RadioButton rBtnTrilateration;
         private System.Windows.Forms.RadioButton rBtnBoth;
+        private System.Windows.Forms.RadioButton rBtnEPTA;
     }
 }
 

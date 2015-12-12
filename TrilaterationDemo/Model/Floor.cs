@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using TrilaterationDemo.TrilateratingStrategy;
 
-namespace TrilaterationDemo
+namespace TrilaterationDemo.Model
 {
     public class Floor
     {
@@ -20,17 +21,24 @@ namespace TrilaterationDemo
             {
                 new TrilaterationStrategy(this),
                 new RayTracingStrategy(this),
-                new PowerCenterStrategy(this)
+                new PowerCenterStrategy(this),
+                new EptaStrategy(this)
             };
             Reset();
         }
         #endregion
 
         private readonly List<AbstractStrategy> _strategies;
-        public bool IsUsingBothStrategies { get; private set; }
         private int _usingStrategyIndex;
+
         public List<Beacon> Beacons { get; private set; }
         public List<PointF> UserPositions { get; private set; }
+        public bool IsUsingBothStrategies { get; private set; }
+
+        public string BeaconsAsString()
+        {
+            return Beacons.Aggregate("", (current, beacon) => current + ("(" + beacon.X + "; " + beacon.Y + "); Acc=" + beacon.Accuracy + "\n"));
+        }
 
         public void Reset()
         {

@@ -2,117 +2,98 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Windows.Forms;
+using TrilaterationDemo.Model;
 
-namespace TrilaterationDemo
+namespace TrilaterationDemo.Presenters
 {
-    public class Drawer
+    public class Drawer : AbstractDrawer
     {
-        private readonly Graphics _graphics;
         private List<Beacon> _beacons;
         private event EventHandler NeedToRecalculate;
 
-        private bool _isBeaconSelected, _isBeaconRadiusSelected;
-        private Beacon _selectedBeacon;
-        private bool _dragging, _changingAccuracy;
-
-        private const float ShiftX = 150;
-        private const float ShiftY = 70;
-        private const float MetersToPixels = 100;
-        private const float BeaconSize = 10;
-        private const float SelectedBeaconSize = 14;
+        private bool _isBeaconRadiusSelected;
+        private bool _changingAccuracy;
+        
         private const float AccuracyRadiusLineWidth = 2;
         private const float SelectedAccuracyRadiusLineWidth = 4;
+        
         private const float UserPointSize = 8;
         private const float UserExtraPointSize = 12;
-        private const float LabelShift = 10;
-        private readonly Font _font;
-        private readonly StringFormat _centerStringFormat;
 
-        public Drawer(Image bitmap)
+        public Drawer(Image bitmap) : base(bitmap)
         {
-            _graphics = Graphics.FromImage(bitmap);
             _beacons = Floor.GetFloor().Beacons;
-            _font = new Font("Arial", 10f);
-            _centerStringFormat = new StringFormat
-            {
-                LineAlignment = StringAlignment.Center,
-                Alignment = StringAlignment.Center
-            };
+            
             NeedToRecalculate += (sender, args) => Floor.GetFloor().CalculateUserPosition();
-
             Reset();
             Draw();
         }
 
-        public void Reset()
+        protected override sealed void Reset()
         {
-            _isBeaconSelected = false;
             _isBeaconRadiusSelected = false;
-
-            _dragging = false;
             _changingAccuracy = false;
 
             Floor.GetFloor().Reset();
             _beacons = Floor.GetFloor().Beacons;
 
-            Draw();
+            base.Reset();
         }
 
         #region Events
 
-        public void SetNeedsDisplay()
+        public override void SetNeedsDisplay()
         {
+            base.SetNeedsDisplay();
             NeedToRecalculate.Invoke(this, null);
-            Draw();
         }
 
-        public void OnMouseDown(double x, double y)
+        public override void OnMouseDown(double x, double y)
         {
-            if (_isBeaconSelected && (_selectedBeacon != null))
-            {
-                _dragging = true;
-            }
-            if (_isBeaconRadiusSelected && (_selectedBeacon != null))
+            if (_isBeaconRadiusSelected && (SelectedPoint != null))
             {
                 _changingAccuracy = true;
             }
-            Draw();
+            base.OnMouseDown(x, y);
         }
 
-        public void OnMouseMove(float x, float y)
+        public override void OnMouseMove(float x, float y)
         {
-            if ((!_isBeaconSelected) && (!_isBeaconRadiusSelected))
+            if ((!IsPointSelected) && (!_isBeaconRadiusSelected))
             {
-                foreach (var beacon in _beacons.Where(beacon => IsOverBeacon(beacon, x, y)))
+                foreach (var beacon in _beacons.Where(beacon => IsOverPoint(beacon, x, y)))
                 {
-                    _isBeaconSelected = true;
-                    _selectedBeacon = beacon;
+                    IsPointSelected = true;
+                    SelectedPoint = beacon;
                     break;
                 }
                 
                 foreach (var beacon in _beacons.Where(beacon => IsOverBeaconAccuracyRadius(beacon, x, y)))
                 {
                     _isBeaconRadiusSelected = true;
-                    _selectedBeacon = beacon;
+                    SelectedPoint = beacon;
                     break;
                 }
             }
             else
             {
-                if (_dragging)
+                if (Dragging)
                 {
-                    _selectedBeacon.RefreshPosition(x - ShiftX, y - ShiftY, MetersToPixels);
+                    SelectedPoint.RefreshPosition(x - ShiftX, y - ShiftY, MetersToPixels);
                     NeedToRecalculate.Invoke(this, null);
                 }
                 else if (_changingAccuracy)
                 {
-                    _selectedBeacon.RefreshAccuracy(x - ShiftX, y - ShiftY, MetersToPixels);
+                    var beacon = SelectedPoint as Beacon;
+                    if (beacon != null)
+                        beacon.RefreshAccuracy(x - ShiftX, y - ShiftY, MetersToPixels);
                     NeedToRecalculate.Invoke(this, null);
                 }
 
-                if (IsNotOverSelectedBeacon(x, y))
+                if (IsNotOverSelectedPoint(x, y))
                 {
-                    _isBeaconSelected = false;
+                    IsPointSelected = false;
                 }
 
                 if (IsNotOverSelectedBeaconAccuracyRadius(x, y))
@@ -124,48 +105,48 @@ namespace TrilaterationDemo
             Draw();
         }
 
-        public void OnMouseUp()
+        public override void OnMouseUp()
         {
-            _dragging = false;
             _changingAccuracy = false;
-            Draw();
+            base.OnMouseUp();
         }
         #endregion
 
         #region Drawing
-        private void Draw()
+
+        protected override sealed void Draw()
         {
-            _graphics.Clear(Color.White);
+            base.Draw();
 
             foreach (var beacon in _beacons)
             {
                 #region Drawing beacons
-                if (_isBeaconSelected && _selectedBeacon == beacon)
+                if (IsPointSelected && SelectedPoint == beacon)
                 {
-                    _graphics.FillEllipse(new SolidBrush(Color.Blue),
+                    Graphics.FillEllipse(new SolidBrush(Color.Blue),
                         new RectangleF
                         {
-                            Location = new PointF(ShiftX + beacon.X*MetersToPixels - SelectedBeaconSize/2,
-                                ShiftY + beacon.Y*MetersToPixels - SelectedBeaconSize/2),
-                            Size = new SizeF(SelectedBeaconSize, SelectedBeaconSize)
+                            Location = new PointF(ShiftX + beacon.X*MetersToPixels - SelectedPointSize/2,
+                                ShiftY + beacon.Y*MetersToPixels - SelectedPointSize/2),
+                            Size = new SizeF(SelectedPointSize, SelectedPointSize)
                         });
                 }
                 else
                 {
-                    _graphics.FillEllipse(new SolidBrush(Color.CornflowerBlue),
+                    Graphics.FillEllipse(new SolidBrush(Color.CornflowerBlue),
                        new RectangleF
                        {
-                           Location = new PointF(ShiftX + beacon.X * MetersToPixels - BeaconSize / 2,
-                               ShiftY + beacon.Y * MetersToPixels - BeaconSize / 2),
-                           Size = new SizeF(BeaconSize, BeaconSize)
+                           Location = new PointF(ShiftX + beacon.X * MetersToPixels - PointSize / 2,
+                               ShiftY + beacon.Y * MetersToPixels - PointSize / 2),
+                           Size = new SizeF(PointSize, PointSize)
                        });
                 }
                 #endregion
 
                 #region Drawing beacon radiuses
-                if (_isBeaconRadiusSelected && _selectedBeacon == beacon)
+                if (_isBeaconRadiusSelected && SelectedPoint == beacon)
                 {
-                    _graphics.DrawEllipse(new Pen(Color.Salmon, SelectedAccuracyRadiusLineWidth),
+                    Graphics.DrawEllipse(new Pen(Color.Salmon, SelectedAccuracyRadiusLineWidth),
                     new RectangleF
                     {
                         Location = new PointF(ShiftX + (beacon.X - beacon.Accuracy) * MetersToPixels,
@@ -175,7 +156,7 @@ namespace TrilaterationDemo
                 }
                 else
                 {
-                    _graphics.DrawEllipse(new Pen(Color.Salmon, AccuracyRadiusLineWidth),
+                    Graphics.DrawEllipse(new Pen(Color.Salmon, AccuracyRadiusLineWidth),
                     new RectangleF
                     {
                         Location = new PointF(ShiftX + (beacon.X - beacon.Accuracy) * MetersToPixels,
@@ -189,7 +170,7 @@ namespace TrilaterationDemo
             if (!Floor.GetFloor().IsUsingBothStrategies)
             {
                 #region Draw single user position
-                _graphics.DrawEllipse(new Pen(Color.Teal, 2),
+                Graphics.DrawEllipse(new Pen(Color.Teal, 2),
                     new RectangleF
                     {
                         Location =
@@ -197,7 +178,7 @@ namespace TrilaterationDemo
                                 MetersToPixels * Floor.GetFloor().UserPositions[0].Y + ShiftY - UserExtraPointSize / 2),
                         Size = new SizeF(UserExtraPointSize, UserExtraPointSize)
                     });
-                _graphics.FillEllipse(new SolidBrush(Color.LimeGreen),
+                Graphics.FillEllipse(new SolidBrush(Color.LimeGreen),
                     new RectangleF
                     {
                         Location = new PointF(MetersToPixels * Floor.GetFloor().UserPositions[0].X + ShiftX - UserPointSize / 2,
@@ -209,7 +190,7 @@ namespace TrilaterationDemo
             else
             {
                 #region Trilateration
-                _graphics.DrawEllipse(new Pen(Color.Teal, 2),
+                Graphics.DrawEllipse(new Pen(Color.Teal, 2),
                     new RectangleF
                     {
                         Location =
@@ -217,21 +198,21 @@ namespace TrilaterationDemo
                                 MetersToPixels * Floor.GetFloor().UserPositions[0].Y + ShiftY - UserExtraPointSize / 2),
                         Size = new SizeF(UserExtraPointSize, UserExtraPointSize)
                     });
-                _graphics.FillEllipse(new SolidBrush(Color.LimeGreen),
+                Graphics.FillEllipse(new SolidBrush(Color.LimeGreen),
                     new RectangleF
                     {
                         Location = new PointF(MetersToPixels * Floor.GetFloor().UserPositions[0].X + ShiftX - UserPointSize / 2,
                             MetersToPixels * Floor.GetFloor().UserPositions[0].Y + ShiftY - UserPointSize / 2),
                         Size = new SizeF(UserPointSize, UserPointSize)
                     });
-                _graphics.DrawString("CI", _font, new SolidBrush(Color.LimeGreen), 
+                Graphics.DrawString("CI", Font, new SolidBrush(Color.LimeGreen), 
                     MetersToPixels * Floor.GetFloor().UserPositions[0].X + ShiftX + LabelShift,
                     MetersToPixels * Floor.GetFloor().UserPositions[0].Y + ShiftY - LabelShift, 
-                    _centerStringFormat);
+                    CenterStringFormat);
                 #endregion
 
                 #region Ray tracing
-                _graphics.DrawEllipse(new Pen(Color.DarkBlue, 2),
+                Graphics.DrawEllipse(new Pen(Color.DarkBlue, 2),
                     new RectangleF
                     {
                         Location =
@@ -239,21 +220,21 @@ namespace TrilaterationDemo
                                 MetersToPixels * Floor.GetFloor().UserPositions[1].Y + ShiftY - UserExtraPointSize / 2),
                         Size = new SizeF(UserExtraPointSize, UserExtraPointSize)
                     });
-                _graphics.FillEllipse(new SolidBrush(Color.DeepSkyBlue),
+                Graphics.FillEllipse(new SolidBrush(Color.DeepSkyBlue),
                     new RectangleF
                     {
                         Location = new PointF(MetersToPixels * Floor.GetFloor().UserPositions[1].X + ShiftX - UserPointSize / 2,
                             MetersToPixels * Floor.GetFloor().UserPositions[1].Y + ShiftY - UserPointSize / 2),
                         Size = new SizeF(UserPointSize, UserPointSize)
                     });
-                _graphics.DrawString("RT", _font, new SolidBrush(Color.DarkBlue),
+                Graphics.DrawString("RT", Font, new SolidBrush(Color.DarkBlue),
                     MetersToPixels * Floor.GetFloor().UserPositions[1].X + ShiftX + LabelShift,
                     MetersToPixels * Floor.GetFloor().UserPositions[1].Y + ShiftY - LabelShift, 
-                    _centerStringFormat);
+                    CenterStringFormat);
                 #endregion
 
                 #region Power center
-                _graphics.DrawEllipse(new Pen(Color.DarkOrange, 2),
+                Graphics.DrawEllipse(new Pen(Color.DarkOrange, 2),
                     new RectangleF
                     {
                         Location =
@@ -261,37 +242,24 @@ namespace TrilaterationDemo
                                 MetersToPixels * Floor.GetFloor().UserPositions[2].Y + ShiftY - UserExtraPointSize / 2),
                         Size = new SizeF(UserExtraPointSize, UserExtraPointSize)
                     });
-                _graphics.FillEllipse(new SolidBrush(Color.Orange),
+                Graphics.FillEllipse(new SolidBrush(Color.Orange),
                     new RectangleF
                     {
                         Location = new PointF(MetersToPixels * Floor.GetFloor().UserPositions[2].X + ShiftX - UserPointSize / 2,
                             MetersToPixels * Floor.GetFloor().UserPositions[2].Y + ShiftY - UserPointSize / 2),
                         Size = new SizeF(UserPointSize, UserPointSize)
                     });
-                _graphics.DrawString("PC", _font, new SolidBrush(Color.DarkOrange),
+                Graphics.DrawString("PC", Font, new SolidBrush(Color.DarkOrange),
                     MetersToPixels * Floor.GetFloor().UserPositions[2].X + ShiftX + LabelShift,
                     MetersToPixels * Floor.GetFloor().UserPositions[2].Y + ShiftY - LabelShift, 
-                    _centerStringFormat);
+                    CenterStringFormat);
                 #endregion
             }
         }
+
         #endregion
 
         #region Extra Methods
-        private static bool IsOverBeacon(Beacon beacon, float x, float y)
-        {
-            var dx = MetersToPixels*beacon.X + ShiftX - x;
-            var dy = MetersToPixels*beacon.Y + ShiftY - y;
-            return Math.Sqrt(dx*dx + dy*dy) < SelectedBeaconSize;
-        }
-
-        private bool IsNotOverSelectedBeacon(float x, float y)
-        {
-            if (_selectedBeacon == null)
-                return true;
-            return !IsOverBeacon(_selectedBeacon, x, y);
-        }
-
         private static bool IsOverBeaconAccuracyRadius(Beacon beacon, float x, float y)
         {
             var dx = MetersToPixels * beacon.X + ShiftX - x;
@@ -303,9 +271,12 @@ namespace TrilaterationDemo
 
         private bool IsNotOverSelectedBeaconAccuracyRadius(float x, float y)
         {
-            if (_selectedBeacon == null)
+            if (SelectedPoint == null)
                 return true;
-            return !IsOverBeaconAccuracyRadius(_selectedBeacon, x, y);
+            var beacon = SelectedPoint as Beacon;
+            if (beacon != null)
+                return !IsOverBeaconAccuracyRadius(beacon, x, y);
+            return false;
         }
         #endregion
     }
